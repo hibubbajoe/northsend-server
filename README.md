@@ -21,78 +21,168 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+# Northsend Server
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+A secure file transfer backend built with NestJS, similar to WeTransfer but with client-side encryption.
 
-## Project setup
+## Features
 
-```bash
-$ npm install
+- ✅ Transfer creation with metadata
+- ✅ Chunked file uploads with encryption support
+- ✅ Supabase Storage integration
+- ✅ TypeScript with full type safety
+- ✅ Validation with class-validator
+- ✅ Modular architecture
+
+## Setup
+
+1. **Install dependencies:**
+
+   ```bash
+   npm install
+   ```
+
+2. **Configure environment variables:**
+   Create a `.env` file in the root directory:
+
+   ```env
+   SUPABASE_URL=your_supabase_url_here
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+   ```
+
+3. **Start the development server:**
+   ```bash
+   npm run start:dev
+   ```
+
+The server will run on `http://localhost:3000`
+
+## API Endpoints
+
+### POST /transfers
+
+Create a new transfer with metadata.
+
+**Request body:**
+
+```json
+{
+  "senderEmail": "sender@example.com",
+  "recipientEmails": ["recipient@example.com"],
+  "title": "My Transfer",
+  "expiresAt": "2024-12-31T23:59:59Z"
+}
 ```
 
-## Compile and run the project
+**Response:**
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```json
+{
+  "transferId": "550e8400-e29b-41d4-a716-446655440000"
+}
 ```
 
-## Run tests
+### GET /transfers/:id
 
-```bash
-# unit tests
-$ npm run test
+Retrieve transfer metadata by ID.
 
-# e2e tests
-$ npm run test:e2e
+**Response:**
 
-# test coverage
-$ npm run test:cov
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "senderEmail": "sender@example.com",
+  "recipientEmails": ["recipient@example.com"],
+  "title": "My Transfer",
+  "expiresAt": "2024-12-31T23:59:59.000Z",
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}
 ```
 
-## Deployment
+### POST /files/upload
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Upload an encrypted file chunk.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+**Request (multipart/form-data):**
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+- `chunk`: File chunk (binary data)
+- `transferId`: UUID of the transfer
+- `fileId`: UUID of the file
+- `chunkIndex`: Index of the chunk (0-based)
+- `totalChunks`: Total number of chunks
+- `iv`: Initialization vector for encryption
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "chunkPath": "transfers/550e8400-e29b-41d4-a716-446655440000/file-id/chunk-0"
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Architecture
 
-## Resources
+```
+src/
+├── app.module.ts          # Main application module
+├── main.ts               # Application entry point
+├── transfers/            # Transfer management
+│   ├── transfers.controller.ts
+│   ├── transfers.service.ts
+│   ├── transfers.module.ts
+│   ├── dto/
+│   │   └── create-transfer.dto.ts
+│   └── entities/
+│       └── transfer.entity.ts
+├── files/                # File upload handling
+│   ├── files.controller.ts
+│   ├── files.service.ts
+│   └── files.module.ts
+├── storage/              # Supabase integration
+│   ├── supabase.service.ts
+│   └── storage.module.ts
+├── mail/                 # Email notifications (stub)
+└── common/               # Shared utilities (guards, interceptors)
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+## Supabase Setup
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+1. Create a new Supabase project
+2. Create a `transfers` table with the following schema:
 
-## Support
+   ```sql
+   CREATE TABLE transfers (
+     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+     sender_email VARCHAR NOT NULL,
+     recipient_emails TEXT[] NOT NULL,
+     title VARCHAR NOT NULL,
+     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+   );
+   ```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+3. Create a storage bucket named `file-chunks` for storing encrypted file chunks
 
-## Stay in touch
+4. Get your `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` from the project settings
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Development
 
-## License
+- `npm run start:dev` - Development server with hot reload
+- `npm run build` - Build for production
+- `npm run start:prod` - Run production build
+- `npm run test` - Run tests
+- `npm run lint` - Run linter
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Next Steps
+
+- [ ] Add email notifications
+- [ ] Implement rate limiting
+- [ ] Add authentication/authorization
+- [ ] Add file download endpoints
+- [ ] Add transfer expiration cleanup
+- [ ] Add comprehensive error handling
+- [ ] Add request logging
+- [ ] Add API documentation with Swagger
