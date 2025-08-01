@@ -3,20 +3,31 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TransfersModule } from './transfers/transfers.module';
-import { FilesModule } from './files/files.module';
 import { StorageModule } from './storage/storage.module';
+import { UsersModule } from './users/users.module';
+import { ClerkClientProvider } from './providers/clerk-client.provider';
+import { AuthModule } from './auth/auth.module';
+import { APP_GUARD } from '@nestjs/core';
+import { ClerkAuthGuard } from './auth/clerk-auth.guard';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
     }),
     TransfersModule,
-    FilesModule,
     StorageModule,
+    UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    ClerkClientProvider,
+    {
+      provide: APP_GUARD,
+      useClass: ClerkAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

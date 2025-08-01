@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
-import { SupabaseService } from './supabase.service';
 import { WasabiService } from './wasabi.service';
 
 @Module({
-  providers: [SupabaseService, WasabiService],
-  exports: [SupabaseService, WasabiService],
+  providers: [WasabiService],
+  exports: [WasabiService],
 })
 export class StorageModule {}

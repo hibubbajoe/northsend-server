@@ -7,10 +7,14 @@ import {
   ValidationPipe,
   UsePipes,
   NotFoundException,
+  Patch,
+  Req,
 } from '@nestjs/common';
 import { TransfersService } from './transfers.service';
 import { CreateTransferDto } from './dto/create-transfer.dto';
 import { Transfer } from './entities/transfer.entity';
+import { getAuth } from '@clerk/express';
+import { Request } from 'express';
 
 @Controller('transfers')
 @UsePipes(new ValidationPipe({ transform: true }))
@@ -20,8 +24,11 @@ export class TransfersController {
   @Post()
   async create(
     @Body() createTransferDto: CreateTransferDto,
+    @Req() req: Request,
   ): Promise<{ transferId: string }> {
-    return this.transfersService.create(createTransferDto);
+    const { userId } = getAuth(req);
+
+    return this.transfersService.create(createTransferDto, userId);
   }
 
   @Get(':id')
@@ -33,5 +40,15 @@ export class TransfersController {
     }
 
     return transfer;
+  }
+
+  @Patch(':id/complete')
+  async completeTransfer(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ): Promise<Transfer> {
+    const { userId } = getAuth(req);
+
+    return this.transfersService.completeTransfer(id, userId);
   }
 }

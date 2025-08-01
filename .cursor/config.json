@@ -1,0 +1,84 @@
+{
+  "general": {
+    "communication": {
+      "before_implementation": true,
+      "explain_first": true,
+      "ask_for_direction": true,
+      "propose_options": true
+    },
+    "code_consistency": {
+      "http_client": "axios",
+      "avoid_duplicate_layers": true,
+      "use_existing_patterns": true
+    }
+  },
+  "server": {
+    "architecture": {
+      "modules": {
+        "pattern": "NestJS module per feature",
+        "location": "src/{feature}/",
+        "structure": [
+          "{feature}.module.ts",
+          "{feature}.controller.ts",
+          "{feature}.service.ts",
+          "dto/",
+          "entities/"
+        ]
+      },
+      "file_storage": {
+        "provider": "wasabi",
+        "s3_compatible": true,
+        "integration": "via AWS SDK v3 in UploadService"
+      },
+      "billing": {
+        "provider": "stripe",
+        "integration": "handled via NestJS Stripe module in billing module"
+      },
+      "email": {
+        "provider": "resend",
+        "usage": "for transactional emails on file upload/verification",
+        "location": "mail.service.ts"
+      },
+      "metadata": {
+        "primary": "neon",
+        "location": "src/metadata/",
+        "pattern": "Single service for metadata operations"
+      }
+    },
+    "api_design": {
+      "endpoints": {
+        "pattern": "RESTful",
+        "versioning": false,
+        "response_format": "Direct entity objects"
+      },
+      "validation": {
+        "use": "class-validator",
+        "location": "dto/"
+      }
+    }
+  },
+  "development": {
+    "workflow": {
+      "before_coding": [
+        "Discuss approach",
+        "Confirm patterns",
+        "Identify existing solutions",
+        "Get approval"
+      ],
+      "implementation": [
+        "Follow existing patterns",
+        "Use established tools",
+        "Maintain consistency",
+        "No unnecessary abstractions",
+        "Don't overcomplicate things"
+      ]
+    },
+    "avoid": [
+      "Creating new API layers when backend exists",
+      "Mixing HTTP clients (stick to axios)",
+      "Adding unnecessary middleware",
+      "Implementing without discussion",
+      "Creating duplicate functionality"
+    ]
+  }
+}

@@ -4,9 +4,14 @@ import {
   IsDateString,
   IsArray,
   ArrayMinSize,
+  IsNumber,
+  IsUUID,
 } from 'class-validator';
 
 export class CreateTransferDto {
+  @IsUUID()
+  id: string;
+
   @IsEmail()
   senderEmail: string;
 
@@ -20,4 +25,7 @@ export class CreateTransferDto {
 
   @IsDateString()
   expiresAt: string;
+
+  @IsNumber()
+  totalSize: number;
 }

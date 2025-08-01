@@ -1,0 +1,80 @@
+{
+  "development": {
+    "communication": {
+      "before_implementation": true,
+      "explain_first": true,
+      "ask_for_direction": true,
+      "propose_options": true
+    },
+    "workflow": {
+      "before_coding": [
+        "Discuss approach",
+        "Confirm patterns",
+        "Identify existing solutions",
+        "Get approval"
+      ],
+      "implementation": [
+        "Follow existing patterns",
+        "Use established tools",
+        "Maintain consistency",
+        "No unnecessary abstractions"
+      ]
+    },
+    "avoid": [
+      "Creating duplicate services",
+      "Mixing different database access patterns",
+      "Adding unnecessary middleware",
+      "Implementing without discussion",
+      "Overcomplicating simple operations",
+      "Overcomplicating things"
+    ]
+  },
+  "architecture": {
+    "structure": {
+      "pattern": "NestJS module per feature",
+      "location": "src/{feature}/",
+      "required_files": [
+        "{feature}.module.ts",
+        "{feature}.controller.ts",
+        "{feature}.service.ts",
+        "dto/",
+        "entities/"
+      ]
+    },
+    "database": {
+      "primary": "neon",
+      "client": "@neondatabase/serverless",
+      "location": "src/database/",
+      "pattern": "Single database service"
+    },
+    "storage": {
+      "service": "wasabi",
+      "pattern": "Centralized storage service"
+    }
+  },
+  "api_design": {
+    "endpoints": {
+      "pattern": "RESTful",
+      "versioning": false,
+      "response_format": "Direct entity objects"
+    },
+    "validation": {
+      "dto": {
+        "tool": "class-validator",
+        "location": "dto/"
+      },
+      "pipes": {
+        "use": "ValidationPipe",
+        "transform": true
+      }
+    }
+  },
+  "dependencies": {
+    "preferred": {
+      "validation": "class-validator + class-transformer",
+      "database": "@neondatabase/serverless",
+      "storage": "@aws-sdk/client-s3",
+      "config": "@nestjs/config"
+    }
+  }
+}

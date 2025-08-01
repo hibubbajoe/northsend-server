@@ -36,12 +36,15 @@ export class WasabiService {
     });
   }
 
-  // File upload methods
-  async getSignedUploadUrl(
-    path: string,
+  async createPresignedUrl(
+    transferId: string,
+    fileId: string,
+    chunkIndex: number,
     expiresIn: number = 3600,
-  ): Promise<string> {
+  ): Promise<{ url: string; path: string }> {
     try {
+      const path = `transfers/${transferId}/${fileId}/chunk-${chunkIndex}`;
+
       // Create the PutObject command for the specified path
       const command = new PutObjectCommand({
         Bucket: this.bucketName,
@@ -50,11 +53,11 @@ export class WasabiService {
       });
 
       // Generate the pre-signed URL
-      const signedUrl = await getSignedUrl(this.s3Client, command, {
+      const url = await getSignedUrl(this.s3Client, command, {
         expiresIn,
       });
 
-      return signedUrl;
+      return { url, path };
     } catch (error) {
       console.error('❌ Failed to create Wasabi signed upload URL:', error);
       const errorMessage =
